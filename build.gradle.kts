@@ -96,3 +96,25 @@ publishing {
         }
     }
 }
+
+tasks.register("event") {
+    dependsOn(
+        "publishEventPublicationToGitHubPackagesRepository"
+    )
+}
+
+
+tasks.register("grpc") {
+    dependsOn(
+        "publishGrpcServerPublicationToGitHubPackagesRepository",
+        "publishGrpcClientPublicationToGitHubPackagesRepository"
+    )
+}
+
+tasks.register("rest") {
+    dependsOn(
+        "publishRestModelPublicationToGitHubPackagesRepository",
+        "publishRestApiPublicationToGitHubPackagesRepository",
+        "publishRestClientPublicationToGitHubPackagesRepository"
+    )
+}
