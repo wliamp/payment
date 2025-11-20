@@ -1,0 +1,52 @@
+[
+  {
+    "event": "audit.log",
+    "producer": [
+      "payment-gateway",
+      "payment-processor",
+      "fraud-risk-payment"
+    ],
+    "consumer": [
+      "compliance-regulatory-payment"
+    ]
+  },
+  {
+    "event": "authorize.request",
+    "producer": [
+      "payment-gateway"
+    ],
+    "consumer": [
+      "payment-processor",
+      "fraud-risk-payment",
+      "compliance-regulatory-payment"
+    ]
+  },
+  {
+    "event": "authorize.result",
+    "producer": [
+      "payment-processor"
+    ],
+    "consumer": [
+      "payment-gateway",
+      "compliance-regulatory-payment"
+    ]
+  },
+  {
+    "event": "fraud.request",
+    "producer": [
+      "payment-processor"
+    ],
+    "consumer": [
+      "fraud-risk-payment"
+    ]
+  },
+  {
+    "event": "fraud.result",
+    "producer": [
+      "fraud-risk-payment"
+    ],
+    "consumer": [
+      "payment-processor"
+    ]
+  }
+]

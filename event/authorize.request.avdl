@@ -1,0 +1,20 @@
+namespace package;
+
+schema EventType;
+
+enum EventType {
+	AUTHORIZE_REQUESTED
+}
+
+record AuthorizeRequestV1 {
+	EventType eventType;
+	@logicalType("uuid") string transactionId;
+	@logicalType("uuid") string correlationId;
+	string merchantId;
+	string payerId;
+	string? orderId = null;
+	double amount;
+	string currency;
+	string? cardMasked = null;
+	@logicalType("timestamp-millis") long timestamp;
+}

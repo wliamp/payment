@@ -1,2 +1,2 @@
-rootProject.name = "event"
+rootProject.name = "payment-authorize-v1"
 

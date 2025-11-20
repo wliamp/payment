@@ -1,0 +1,22 @@
+namespace package;
+
+schema EventType;
+
+enum EventType {
+	FRAUD_RESULT
+}
+
+enum FraudAction {
+	NONE,
+	REVIEW,
+	BLOCK
+}
+
+record FraudResultV1 {
+	EventType eventType;
+	@logicalType("uuid") string transactionId;
+	@logicalType("uuid") string correlationId;
+	int riskScore;
+	FraudAction action;
+	@logicalType("timestamp-millis") long timestamp;
+}

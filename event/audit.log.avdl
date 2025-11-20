@@ -1,0 +1,28 @@
+namespace package;
+
+enum EventType {
+	AUDIT_LOG
+}
+
+enum ActionType {
+	AUTHORIZE_INITIATED,
+	AUTHORIZE_APPROVED,
+	AUTHORIZE_DECLINED,
+	FRAUD_TRIGGERED,
+	ERROR_OCCURRED
+}
+
+record DetailValue {
+	union{string, int, long, boolean, double, null} value;
+}
+
+record AuditLog {
+	EventType eventType;
+	@logicalType("uuid") string correlationId;
+	@logicalType("uuid") string? transactionId = null;
+	ActionType action;
+	string actor;
+	@logicalType("timestamp-millis") long timestamp;
+	string payloadHash;
+	union{null, map<DetailValue>} details = null;
+}
