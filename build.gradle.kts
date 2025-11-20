@@ -3,7 +3,6 @@ import java.lang.System.getenv
 plugins {
     java
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 val tld: String? = getenv("TLD")
@@ -17,10 +16,6 @@ val id = "payment-authorize-v1-$spec"
 
 group = "$tld.$org.$based"
 version = getenv("TAG") ?: ""
-
-tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    relocate("package", "$tld.$org.$based.payment.authorize.v1.$spec")
-}
 
 publishing {
     publications {

@@ -2,17 +2,21 @@ name: Publish Event
 on:
   push:
     branches: [ main ]
+    paths: [ "event" ]
 jobs:
   detect:
     steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            event
       - uses: tj-actions/changed-files@v47
         with:
           base_branch: main
         id: changed
-      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT }}@main
+      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_DETECT }}@main
         with:
           changed: ${{ toJSON(steps.changed.outputs.all_changed_files) }}
-          extension: avdl
         id: matrix
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -22,22 +26,22 @@ jobs:
       - uses: actions/checkout@v5
         with:
           sparse-checkout: |
-            ${{ matrix.domain }}/${{ matrix.usecase }}/${{ matrix.version }}/${{ matrix.event }}.avdl
+            ${{ matrix.based }}/${{ matrix.spec }}.avdl
             *.gradle.kts
             gradle/
             gradlew
-      - uses: ${{ vars.REPO_ACTION }}/.github/actions/${{ vars.ACTION }}@main
+      - uses: ${{ vars.REPO_ACTION }}/.github/actions/${{ vars.ACTION_EVENT }}@main
         with:
-          domain: ${{ matrix.domain }}
-          usecase: ${{ matrix.usecase }}
-          version: ${{ matrix.version }}
-          contract: ${{ matrix.contract }}
-          modules: ${{ matrix.modules }}
+          domain: "payment"
+          usecase: "authorize"
+          version: "v1"
+          spec: ${{ matrix.spec }}
           tld: ${{ vars.TLD }}
           org: ${{ vars.ORG }}
-          repo: ${{ vars.REPO_ARTIFACT }}
-          event: ${{ vars.EVENT }}
-          event_pat: ${{ secrets.PAT_EVENT }}
+          contract_repo: ${{ vars.REPO_CONTRACT }}
+          artifact_repo: ${{ vars.REPO_ARTIFACT }}
+          dispatch: ${{ vars.DISPATCH_EVENT }}
+          contract_pat: ${{ secrets.PAT_CONTRACT }}
           artifact_pat: ${{ secrets.PAT_ARTIFACT }}
     strategy:
       fail-fast: false

@@ -2,17 +2,21 @@ name: Publish gRPC
 on:
   push:
     branches: [ main ]
+    paths: [ "grpc" ]
 jobs:
   detect:
     steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+           grpc
       - uses: tj-actions/changed-files@v47
         with:
           base_branch: main
         id: changed
-      - uses: ${{ vars.SCRIPT_REPO }}/.github/actions/${{ vars.DETECT_SCRIPT }}@main
+      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_DETECT }}@main
         with:
           changed: ${{ toJSON(steps.changed.outputs.all_changed_files) }}
-          extension: proto
         id: matrix
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -22,21 +26,23 @@ jobs:
       - uses: actions/checkout@v5
         with:
           sparse-checkout: |
-            ${{ matrix.scope }}/${{ matrix.service }}/${{ matrix.domain }}.${{ matrix.usecase }}.${{ matrix.version }}.proto
+            ${{ matrix.based }}/${{ matrix.spec }}.proto
             *.gradle.kts
             gradle/
             gradlew
-      - uses: ${{ vars.ACTION_REPO }}/.github/actions/${{ vars.PUBLISH_ACTION }}@main
+      - uses: ${{ vars.REPO_ACTION }}/.github/actions/${{ vars.ACTION_GRPC }}@main
         with:
-          scope: ${{ matrix.scope }}
-          service: ${{ matrix.service }}
-          domain: ${{ matrix.domain }}
-          usecase: ${{ matrix.usecase }}
-          version: ${{ matrix.version }}
-          grpc_pat: ${{ secrets.GRPC_PAT }}
-          starter_pat: ${{ secrets.STARTER_PAT }}
-          repo: ${{ vars.STARTER_REPO }}
-          event: ${{ vars.PUBLISH_EVENT }}
+          domain: "payment"
+          usecase: "authorize"
+          version: "v1"
+          spec: ${{ matrix.spec }}
+          tld: ${{ vars.TLD }}
+          org: ${{ vars.ORG }}
+          contract_repo: ${{ vars.REPO_CONTRACT }}
+          artifact_repo: ${{ vars.REPO_ARTIFACT }}
+          dispatch: ${{ vars.DISPATCH_GRPC }}
+          contract_pat: ${{ secrets.PAT_CONTRACT }}
+          artifact_pat: ${{ secrets.PAT_ARTIFACT }}
     strategy:
       fail-fast: false
       matrix:

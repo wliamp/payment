@@ -22,7 +22,7 @@ message ReprocessResponse {
   google.protobuf.Timestamp scheduled_at = 3;
 }
 
-service ReprocessService {
+service ProcessorReprocessService {
   rpc Health(HealthRequest) returns (HealthResponse);
   rpc Reprocess(ReprocessRequest) returns (ReprocessResponse);
 }

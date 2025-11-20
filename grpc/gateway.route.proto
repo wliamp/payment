@@ -22,6 +22,6 @@ message RouteResponse {
   bytes payload = 6;
 }
 
-service RouteService {
+service GatewayRouteService {
   rpc Route(RouteRequest) returns (RouteResponse);
 }

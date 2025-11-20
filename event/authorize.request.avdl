@@ -1,4 +1,4 @@
-namespace package;
+namespace org.hamsaqua.event.payment.authorize.v1.authorize.request;
 
 schema EventType;
 
