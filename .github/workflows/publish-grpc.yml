@@ -1,4 +1,4 @@
-name: Publish
+name: Publish gRPC
 on:
   push:
     branches: [ main ]

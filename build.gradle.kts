@@ -53,6 +53,36 @@ publishing {
                 url.set("https://github.com/$org/$repo")
             }
         }
+
+        create<MavenPublication>("restModel") {
+            from(components["java"])
+            artifactId = "$id-model"
+            pom {
+                name.set(artifactId)
+                description.set("Reusable REST API Models Specification")
+                url.set("https://github.com/$org/$repo")
+            }
+        }
+
+        create<MavenPublication>("restApi") {
+            from(components["java"])
+            artifactId = "$id-api"
+            pom {
+                name.set(artifactId)
+                description.set("Reusable REST APIs Specification")
+                url.set("https://github.com/$org/$repo")
+            }
+        }
+
+        create<MavenPublication>("restClient") {
+            from(components["java"])
+            artifactId = "$id-client"
+            pom {
+                name.set(artifactId)
+                description.set("Reusable REST API Clients Specification")
+                url.set("https://github.com/$org/$repo")
+            }
+        }
     }
 
     repositories {
