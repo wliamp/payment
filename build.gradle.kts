@@ -8,20 +8,18 @@ plugins {
 
 val tld: String? = getenv("TLD")
 val org: String? = getenv("ORG")
-val domain: String? = getenv("DOMAIN")
-val usecase: String? = getenv("USECASE")
-val ver: String? = getenv("VERSION")
-val event: String? = getenv("EVENT")
-val id: String? = getenv("ID")
+val based: String? = getenv("BASED")
+val spec: String? = getenv("SPEC")
 val repo: String? = getenv("REPO")
 val actor: String? = getenv("ACTOR")
 val token: String? = getenv("TOKEN")
+val id = "payment-authorize-v1-$spec"
 
-group = "$tld.$org.event"
+group = "$tld.$org.$based"
 version = getenv("TAG") ?: ""
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    relocate("package", "$tld.$org.event.$domain.$usecase.$ver.$event")
+    relocate("package", "$tld.$org.$based.payment.authorize.v1.$spec")
 }
 
 publishing {
@@ -32,6 +30,26 @@ publishing {
             pom {
                 name.set(artifactId)
                 description.set("Reusable Event Schemas Specification")
+                url.set("https://github.com/$org/$repo")
+            }
+        }
+
+        create<MavenPublication>("grpcServer") {
+            from(components["java"])
+            artifactId = "$id-server"
+            pom {
+                name.set(artifactId)
+                description.set("Reusable gRPC API Servers Specification")
+                url.set("https://github.com/$org/$repo")
+            }
+        }
+
+        create<MavenPublication>("grpcClient") {
+            from(components["java"])
+            artifactId = "$id-client"
+            pom {
+                name.set(artifactId)
+                description.set("Reusable gRPC API Clients Specification")
                 url.set("https://github.com/$org/$repo")
             }
         }
