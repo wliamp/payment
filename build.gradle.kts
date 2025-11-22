@@ -3,6 +3,7 @@ import java.lang.System.getenv
 plugins {
     java
     `maven-publish`
+    id("org.flywaydb.flyway") version "11.17.1" apply false
 }
 
 val tld: String? = getenv("TLD")
@@ -16,6 +17,17 @@ val id = "payment-authorize-v1-$spec"
 
 group = "$tld.$org.$based"
 version = getenv("TAG") ?: ""
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply(plugin = "java")
+    apply(plugin = "org.flywaydb.flyway")
+}
 
 publishing {
     publications {
