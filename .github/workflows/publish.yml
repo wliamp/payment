@@ -1,0 +1,59 @@
+name: Publish
+on:
+  pull_request:
+    branches: [ main ]
+jobs:
+  detect:
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - uses: tj-actions/changed-files@v47
+        id: changed
+      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_DETECT }}@main
+        with:
+          changed: ${{ toJSON(steps.changed.outputs.all_changed_files) }}
+        id: matrix
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    if: github.head_ref == 'dev'
+    runs-on: ubuntu-latest
+  tagging:
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_TAGING }}@main
+        with:
+          artifacts: ${{ needs.detect.outputs.matrix }}
+        id: matrix
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    needs: detect
+    runs-on: ubuntu-latest
+  publish:
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            ${{ matrix.artifact }}
+            gradle/
+            gradlew
+            build.gradle.kts
+            settings.gradle.kts
+      - uses: ${{ vars.REPO_ACTION }}/.github/actions/${{ vars.ACTION_PUBLISH }}@main
+        with:
+          artifact: ${{ matrix.artifact }}
+          version: ${{ matrix.version }}
+          tld: ${{ vars.TLD }}
+          pom: ${{ vars.POM }}
+          desc: ${{ vars.DESC }}
+          dev_id: ${{ vars.DEV_ID }}
+          dev_name: ${{ vars.DEV_NAME }}
+          dev_email: ${{ vars.DEV_EMAIL }}
+          user: ${{ vars.SONATYPE_ACCOUNT }}
+          token: ${{ secrets.SONATYPE_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.tagging.outputs.matrix) }}
+    needs: tagging
+    runs-on: ubuntu-latest

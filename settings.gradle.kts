@@ -1,1 +1,3 @@
-rootProject.name = "payment-authorize-v1"
+rootProject.name = "payment"
+
+include("core")

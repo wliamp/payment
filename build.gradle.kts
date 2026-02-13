@@ -1,22 +1,36 @@
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.testing.Test
+import org.gradle.jvm.toolchain.JavaLanguageVersion.of
 import java.lang.System.getenv
 
 plugins {
-    java
-    `maven-publish`
-    id("org.flywaydb.flyway") version "11.17.1" apply false
+    id("org.jetbrains.kotlin.jvm") version "2.2.0"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.2.0"
+    id("org.springframework.boot") version "4.0.2"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("maven-publish")
+    id("signing")
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
-val tld: String? = getenv("TLD")
-val org: String? = getenv("ORG")
-val based: String? = getenv("BASED")
-val spec: String? = getenv("SPEC")
-val repo: String? = getenv("REPO")
-val actor: String? = getenv("ACTOR")
-val token: String? = getenv("TOKEN")
-val id = "payment-authorize-v1-$spec"
+fun envOrProp(env: String, prop: String = env, def: String = ""): String =
+    getenv(env) ?: (findProperty(prop) as String?) ?: def
 
-group = "$tld.$org.$based"
-version = getenv("TAG") ?: ""
+val tld = envOrProp("TLD", "kit.algorithm.tld", "kit")
+val org = envOrProp("ORG", "kit.algorithm.org", "team")
+val tag = envOrProp("TAG", "kit.algorithm.tag", "0.0.1-SNAPSHOT")
+val repo = envOrProp("REPO", "kit.algorithm.repo", "repository")
+val artId = envOrProp("ARTIFACT_ID", "kit.algorithm.artifact.id", "art")
+val artName = envOrProp("ARTIFACT_NAME", "kit.algorithm.artifact.name", "artifact")
+val desc = envOrProp("DESC", "kit.algorithm.artifact.desc", "description")
+val devId = envOrProp("DEV_ID", "kit.algorithm.dev.id", "dev")
+val devName = envOrProp("DEV_NAME", "kit.algorithm.dev.name", "Developer")
+val devEmail = envOrProp("DEV_EMAIL", "kit.algorithm.dev.email", "developer@email.dev")
+val user = envOrProp("USER", "kit.algorithm.user", "username")
+val token = envOrProp("TOKEN", "kit.algorithm.token", "password")
+
+group = "$tld.$org"
+version = tag
 
 allprojects {
     repositories {
@@ -25,103 +39,77 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "java")
-    apply(plugin = "org.flywaydb.flyway")
-}
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
 
-publishing {
-    publications {
-        create<MavenPublication>("event") {
-            from(components["java"])
-            artifactId = id
-            pom {
-                name.set(artifactId)
-                description.set("Reusable Event Schemas Specification")
-                url.set("https://github.com/$org/$repo")
-            }
+    java {
+        toolchain {
+            languageVersion.set(of(21))
         }
+    }
 
-        create<MavenPublication>("grpcServer") {
-            from(components["java"])
-            artifactId = "$id-server"
-            pom {
-                name.set(artifactId)
-                description.set("Reusable gRPC API Servers Specification")
-                url.set("https://github.com/$org/$repo")
-            }
-        }
+    kotlin {
+        jvmToolchain(21)
+    }
 
-        create<MavenPublication>("grpcClient") {
-            from(components["java"])
-            artifactId = "$id-client"
-            pom {
-                name.set(artifactId)
-                description.set("Reusable gRPC API Clients Specification")
-                url.set("https://github.com/$org/$repo")
-            }
-        }
+    group = rootProject.group
+    version = rootProject.version
 
-        create<MavenPublication>("restModel") {
-            from(components["java"])
-            artifactId = "$id-model"
-            pom {
-                name.set(artifactId)
-                description.set("Reusable REST API Models Specification")
-                url.set("https://github.com/$org/$repo")
-            }
-        }
+    dependencies {
+        testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.4")
+    }
 
-        create<MavenPublication>("restApi") {
-            from(components["java"])
-            artifactId = "$id-api"
-            pom {
-                name.set(artifactId)
-                description.set("Reusable REST APIs Specification")
-                url.set("https://github.com/$org/$repo")
-            }
-        }
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+    }
 
-        create<MavenPublication>("restClient") {
-            from(components["java"])
-            artifactId = "$id-client"
-            pom {
-                name.set(artifactId)
-                description.set("Reusable REST API Clients Specification")
-                url.set("https://github.com/$org/$repo")
+    publishing {
+        publications {
+            create<MavenPublication>("mavenJava") {
+                from(components["java"])
+                artifactId = artId
+                pom {
+                    url.set("https://github.com/$org/$repo")
+                    name.set(artName)
+                    description.set(desc)
+                    licenses {
+                        license {
+                            name.set("Apache License 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set(devId)
+                            name.set(devName)
+                            email.set(devEmail)
+                        }
+                    }
+                    scm {
+                        connection.set("scm:git:git://github.com/$org/$repo.git")
+                        developerConnection.set("scm:git:ssh://github.com/$org/$repo.git")
+                        url.set("https://github.com/$org/$repo")
+                    }
+                }
             }
         }
     }
 
+    signing {
+        useGpgCmd()
+        sign(publishing.publications["mavenJava"])
+    }
+}
+
+nexusPublishing {
     repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/$org/$repo")
-            credentials {
-                username = actor
-                password = token
-            }
+        sonatype {
+            nexusUrl = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
+            snapshotRepositoryUrl = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            username = user
+            password = token
         }
     }
-}
-
-tasks.register("event") {
-    dependsOn(
-        "publishEventPublicationToGitHubPackagesRepository"
-    )
-}
-
-
-tasks.register("grpc") {
-    dependsOn(
-        "publishGrpcServerPublicationToGitHubPackagesRepository",
-        "publishGrpcClientPublicationToGitHubPackagesRepository"
-    )
-}
-
-tasks.register("rest") {
-    dependsOn(
-        "publishRestModelPublicationToGitHubPackagesRepository",
-        "publishRestApiPublicationToGitHubPackagesRepository",
-        "publishRestClientPublicationToGitHubPackagesRepository"
-    )
 }

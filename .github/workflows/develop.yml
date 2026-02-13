@@ -1,0 +1,39 @@
+name: Develop
+on:
+  pull_request:
+    branches: [ dev ]
+jobs:
+  detect:
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: dev
+          fetch-depth: 2
+      - uses: tj-actions/changed-files@v47
+        id: changed
+      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_DETECT }}@main
+        with:
+          changed: ${{ toJSON(steps.changed.outputs.all_changed_files) }}
+        id: matrix
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    runs-on: ubuntu-latest
+  develop:
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            ${{ matrix.name }}
+            gradle/
+            gradlew
+            build.gradle.kts
+            settings.gradle.kts
+      - uses: ${{ vars.REPO_ACTION }}/.github/actions/${{ vars.ACTION_DEVELOP }}@main
+        with:
+          service: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.detect.outputs.matrix) }}
+    needs: detect
+    runs-on: ubuntu-latest
