@@ -7,42 +7,55 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 2
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
       - uses: tj-actions/changed-files@v47
         id: changed
-      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_DETECT }}@main
+      - uses: $OWNER/$REPO/.github/actions/$SCRIPT@main
         with:
           changed: ${{ toJSON(steps.changed.outputs.all_changed_files) }}
         id: matrix
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+    env:
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ vars.REPO_SCRIPT }}
+      SCRIPT: ${{ vars.SCRIPT_DETECT }}
     if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
   tagging:
     steps:
       - uses: actions/checkout@v5
-      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_TAGING }}@main
         with:
-          artifacts: ${{ needs.detect.outputs.matrix }}
+          fetch-depth: 0
+      - uses: $OWNER/$REPO/.github/actions/$SCRIPT@main
+        with:
+          modules: ${{ needs.detect.outputs.matrix }}
         id: matrix
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+    env:
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ vars.REPO_SCRIPT }}
+      SCRIPT: ${{ vars.SCRIPT_TAGGING }}
     needs: detect
     runs-on: ubuntu-latest
   publish:
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           sparse-checkout: |
             ${{ matrix.artifact }}
             gradle/
             gradlew
+            gradlew.bat
             build.gradle.kts
             settings.gradle.kts
-      - uses: ${{ vars.REPO_ACTION }}/.github/actions/${{ vars.ACTION_PUBLISH }}@main
+      - uses: $OWNER/$REPO/.github/actions/$ACTION@main
         with:
-          artifact: ${{ matrix.artifact }}
-          version: ${{ matrix.version }}
+          module: ${{ matrix.artifact }}
+          tag: ${{ matrix.version }}
           tld: ${{ vars.TLD }}
           pom: ${{ vars.POM }}
           desc: ${{ vars.DESC }}
@@ -51,6 +64,11 @@ jobs:
           dev_email: ${{ vars.DEV_EMAIL }}
           user: ${{ vars.SONATYPE_ACCOUNT }}
           token: ${{ secrets.SONATYPE_TOKEN }}
+    env:
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ vars.REPO_ACTION }}
+      ACTION: ${{ vars.ACTION_PUBLISH }}
+      MODULE: ${{ matrix.artifact }}
     strategy:
       fail-fast: false
       matrix:

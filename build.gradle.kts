@@ -113,3 +113,15 @@ nexusPublishing {
         }
     }
 }
+
+tasks.register("listModules") {
+    doLast {
+        println(
+            rootProject
+                .subprojects
+                .map { it.name }
+                .sorted()
+                .joinToString("\",\"", "[\"", "\"]")
+        )
+    }
+}

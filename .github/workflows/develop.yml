@@ -7,30 +7,41 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: dev
-          fetch-depth: 2
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
       - uses: tj-actions/changed-files@v47
         id: changed
-      - uses: ${{ vars.REPO_SCRIPT }}/.github/actions/${{ vars.SCRIPT_DETECT }}@main
+      - uses: $OWNER/$REPO/.github/actions/$SCRIPT@main
         with:
           changed: ${{ toJSON(steps.changed.outputs.all_changed_files) }}
         id: matrix
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+    env:
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ vars.REPO_SCRIPT }}
+      SCRIPT: ${{ vars.SCRIPT_DETECT }}
     runs-on: ubuntu-latest
   develop:
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           sparse-checkout: |
             ${{ matrix.name }}
             gradle/
             gradlew
+            gradlew.bat
             build.gradle.kts
             settings.gradle.kts
-      - uses: ${{ vars.REPO_ACTION }}/.github/actions/${{ vars.ACTION_DEVELOP }}@main
+      - uses: $OWNER/$REPO/.github/actions/$ACTION@main
         with:
-          service: ${{ matrix.name }}
+          module: ${{ matrix.name }}
+    env:
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ vars.REPO_ACTION }}
+      ACTION: ${{ vars.ACTION_DEVELOP }}
+      MODULE: ${{ matrix.name }}
     strategy:
       fail-fast: false
       matrix:

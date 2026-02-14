@@ -1,13 +1,49 @@
+# Auto normalize text
 * text=auto
 
-/gradlew text eol=lf
+# Shell / CI scripts
 *.sh text eol=lf
-*.bat text eol=crlf
 
+# Windows scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Gradle / Kotlin / JVM
+gradlew text eol=lf
+*.gradle text eol=lf
+*.gradle.kts text eol=lf
+*.kts text eol=lf
+*.java text eol=lf
+*.kt text eol=lf
+*.kotlin text eol=lf
+
+# NodeJS / Web
+*.js text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+
+# Config / Infra
+*.yml text eol=lf
+*.yaml text eol=lf
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+*.tf text eol=lf
+
+# Python (future-proof)
+*.py text eol=lf
+
+# Binary files
 *.jar binary
 *.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
-*.ico binary
 *.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary

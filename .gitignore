@@ -1,28 +1,74 @@
-.gradle
+# JVM / Gradle / Kotlin
+.gradle/
+**/.gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+**/build/
+out/
+**/out/
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-.idea
-*.iws
+**/bin/
+**/kotlin-js-store/
+
+# NodeJS / Frontend
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+.yarn-cache/
+.yarn/unplugged/
+dist/
+**/dist/
+.next/
+.nuxt/
+.svelte-kit/
+coverage/
+
+# IDE / Editors
+.idea/
 *.iml
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache/
+.apt_generated/
+
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-.vscode/
+
+# Logs & temp
+*.log
+hs_err_pid*
+*.tmp
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.*
+*.env
+
+# Tooling future-proof
+.terraform/
+*.tfstate
+*.tfstate.*
+__pycache__/
+*.pyc
+.venv/
+venv/
