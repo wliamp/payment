@@ -1,13 +1,16 @@
 package io.github.wliamp.kit.pay.core
 
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import io.github.wliamp.kit.pay.core.PaymentProps.*
+import org.springframework.http.HttpHeaders.*
+import org.springframework.http.MediaType.*
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import reactor.core.publisher.Mono.*
 import kotlin.collections.get
 
 internal class IAuthorizeNet internal constructor(
-    private val props: PaymentProps.AuthorizeNetProps,
+    private val props: AuthorizeNetProps,
     private val webClient: WebClient
 ) : IPayment<AuthorizeNetClientData, AuthorizeNetSystemData> {
     private val provider = "authorizeNet"
@@ -86,8 +89,8 @@ internal class IAuthorizeNet internal constructor(
                     "hostedPaymentSettings" to buildHostedPaymentSettings()
                 )
             )
-            callJsonApi(body).map { resp ->
-                val token = resp["token"] as? String
+            callJsonApi(body).map {
+                val token = it["token"] as? String
                     ?: error("Authorize.Net Hosted Payment token is missing")
                 mapOf(
                     "success" to true,
@@ -116,14 +119,15 @@ internal class IAuthorizeNet internal constructor(
     )
 
     private fun callJsonApi(body: Any): Mono<Map<*, *>> =
-        webClient.post()
+        webClient
+            .post()
             .uri(props.baseUrl)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
             .bodyValue(body)
             .retrieve()
-            .onStatus({ it.isError }) { res ->
-                res.bodyToMono(String::class.java).flatMap { body ->
-                    Mono.error(IllegalStateException("Authorize.Net request failed: HTTP ${res.statusCode()} - $body"))
+            .onStatus({ it.isError }) {
+                it.bodyToMono<String>().flatMap { body ->
+                    error(IllegalStateException("Authorize.Net request failed: HTTP ${it.statusCode()} - $body"))
                 }
             }
             .bodyToMono(Map::class.java)
@@ -137,8 +141,8 @@ internal class IAuthorizeNet internal constructor(
                     it.transactionKey.isNotBlank() &&
                     it.returnUrl.isNotBlank() &&
                     it.cancelUrl.isNotBlank()
-        }?.let { Mono.just(Unit) }
-            ?: Mono.error(
+        }?.let { just(Unit) }
+            ?: error(
                 IllegalStateException(
                     "Missing parameter " +
                             "'provider.payment.authorize-net.api-login-id' " +
@@ -150,17 +154,17 @@ internal class IAuthorizeNet internal constructor(
             )
 
     private fun mapTxnResponse(resp: Map<*, *>) =
-        (resp["transactionResponse"] as? Map<*, *>).let { txn ->
+        (resp["transactionResponse"] as? Map<*, *>).let {
             val msgs = resp["messages"] as? Map<*, *>
-            val responseCode = txn?.get("responseCode")?.toString()
-            val transId = txn?.get("transId")?.toString()
+            val responseCode = it?.get("responseCode")?.toString()
+            val transId = it?.get("transId")?.toString()
             val resultCode = msgs?.get("resultCode")?.toString()
             val success = responseCode == "1" && resultCode == "Ok" && !transId.isNullOrBlank()
             mapOf(
                 "success" to success,
                 "provider" to provider,
                 "transactionId" to transId,
-                "authCode" to txn?.get("authCode"),
+                "authCode" to it?.get("authCode"),
                 "responseCode" to responseCode,
                 "resultCode" to resultCode,
                 "raw" to resp

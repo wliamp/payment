@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClient.*
 
 @AutoConfiguration
 @EnableConfigurationProperties(PaymentProps::class)
@@ -21,7 +21,7 @@ internal class PaymentAutoConfig private constructor(
         matchIfMissing = true
     )
     fun an(): IPayment<AuthorizeNetClientData, AuthorizeNetSystemData> =
-        IAuthorizeNet(props.authorizeNet, WebClient.builder().build())
+        IAuthorizeNet(props.authorizeNet, builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -31,7 +31,7 @@ internal class PaymentAutoConfig private constructor(
         matchIfMissing = true
     )
     fun vp(): IPayment<VnPayClientData, VnPaySystemData> =
-        IVnPayment(props.vnPay, WebClient.builder().build())
+        IVnPayment(props.vnPay, builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -41,7 +41,7 @@ internal class PaymentAutoConfig private constructor(
         matchIfMissing = true
     )
     fun zp(): IPayment<ZaloPayClientData, ZaloPaySystemData> =
-        IZaloPayment(props.zaloPay, WebClient.builder().build())
+        IZaloPayment(props.zaloPay, builder().build())
 
     @Bean
     @ConditionalOnMissingBean

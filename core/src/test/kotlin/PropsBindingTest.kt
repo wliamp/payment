@@ -2,12 +2,13 @@ package io.github.wliamp.kit.pay.core
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.boot.autoconfigure.AutoConfigurations
+import org.springframework.beans.factory.getBean
+import org.springframework.boot.autoconfigure.AutoConfigurations.*
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 class PropsBindingTest {
     private val baseRunner = ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(PaymentAutoConfig::class.java))
+        .withConfiguration(of(PaymentAutoConfig::class.java))
 
     @Test
     fun `props binding should map values correctly`() {
@@ -18,9 +19,8 @@ class PropsBindingTest {
             "provider.payment.vn-pay.tmn-code=tmn123",
             "provider.payment.zalo-pay.app-id=1001",
             "provider.payment.zalo-pay.key1=zalo-secret"
-        ).run { ctx ->
-            val props = ctx.getBean(PaymentProps::class.java)
-
+        ).run {
+            val props = it.getBean<PaymentProps>()
             assertThat(props.authorizeNet.apiLoginId).isEqualTo("test-login")
             assertThat(props.authorizeNet.transactionKey).isEqualTo("test-key")
             assertThat(props.vnPay.secretKey).isEqualTo("test-vnpay")
@@ -32,10 +32,9 @@ class PropsBindingTest {
 
     @Test
     fun `context loads without any config (defaults)`() {
-        baseRunner.run { ctx ->
-            assertThat(ctx).hasSingleBean(PaymentProps::class.java)
-
-            val props = ctx.getBean(PaymentProps::class.java)
+        baseRunner.run {
+            assertThat(it).hasSingleBean(PaymentProps::class.java)
+            val props = it.getBean<PaymentProps>()
             assertThat(props.authorizeNet.baseUrl)
                 .isEqualTo("https://api2.authorize.net/xml/v1/request.api")
             assertThat(props.vnPay.expiredMinutes).isEqualTo(15)

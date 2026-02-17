@@ -1,23 +1,23 @@
 package io.github.wliamp.kit.pay.core
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.github.wliamp.pro.vrf.ITestSetup
+import io.github.wliamp.kit.pay.core.PaymentProps.*
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.test.StepVerifier
+import reactor.test.StepVerifier.*
 
-internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayClientData, VnPaySystemData>> {
+internal class VnPayTest : ITestSetup<VnPayProps, IPayment<VnPayClientData, VnPaySystemData>> {
     override lateinit var server: MockWebServer
     override lateinit var client: WebClient
-    override lateinit var props: PaymentProps.VnPayProps
+    override lateinit var props: VnPayProps
     override lateinit var provider: IPayment<VnPayClientData, VnPaySystemData>
     override val mapper = ObjectMapper()
 
-    override fun buildProps(): PaymentProps.VnPayProps =
-        PaymentProps.VnPayProps().apply {
+    override fun buildProps(): VnPayProps =
+        VnPayProps().apply {
             baseUrl = ""
             returnUrl = "http://test-return-url"
             secretKey = "test-secret-key"
@@ -28,7 +28,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
         }
 
     override fun buildProvider(
-        props: PaymentProps.VnPayProps,
+        props: VnPayProps,
         client: WebClient
     ) = IVnPayment(props, client)
 
@@ -47,7 +47,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
     fun `authorize should throw UnsupportedOperationException`() {
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
-        StepVerifier.create(provider.authorize(clientData, systemData))
+        create(provider.authorize(clientData, systemData))
             .expectError(UnsupportedOperationException::class.java)
             .verify()
     }
@@ -56,7 +56,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
     fun `capture should throw UnsupportedOperationException`() {
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
-        StepVerifier.create(provider.capture(clientData, systemData))
+        create(provider.capture(clientData, systemData))
             .expectError(UnsupportedOperationException::class.java)
             .verify()
     }
@@ -65,7 +65,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
     fun `void should throw UnsupportedOperationException`() {
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
-        StepVerifier.create(provider.void(clientData, systemData))
+        create(provider.void(clientData, systemData))
             .expectError(UnsupportedOperationException::class.java)
             .verify()
     }
@@ -75,7 +75,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
     fun `sale should build correct purl`() {
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
-        StepVerifier.create(provider.sale(clientData, systemData))
+        create(provider.sale(clientData, systemData))
             .expectNextMatches {
                 val mapResult = it as? Map<*, *>
                 mapResult?.containsKey("purl") == true &&
@@ -86,7 +86,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
 
     @Test
     fun `sale should error if missing config`() {
-        val badProps = PaymentProps.VnPayProps().apply {
+        val badProps = VnPayProps().apply {
             baseUrl = ""
             returnUrl = ""
             secretKey = ""
@@ -95,7 +95,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
         val badProvider = IVnPayment(badProps, client)
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
-        StepVerifier.create(badProvider.sale(clientData, systemData))
+        create(badProvider.sale(clientData, systemData))
             .expectError(IllegalStateException::class.java)
             .verify()
     }
@@ -104,15 +104,13 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
     @Test
     fun `refund should call endpoint and return response`() {
         enqueueJson(server, mapOf("status" to "success"))
-
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData(
             vnpTransactionDate = "20250911123045",
             vnpTxnRef = "TXN123",
             vnpTransactionNo = "TRX456"
         )
-
-        StepVerifier.create(provider.refund(clientData, systemData))
+        create(provider.refund(clientData, systemData))
             .expectNextMatches {
                 ((it as? Map<*, *>)
                     ?.get("resp") as? Map<*, *>
@@ -123,7 +121,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
 
     @Test
     fun `refund should error if missing config`() {
-        val badProps = PaymentProps.VnPayProps().apply {
+        val badProps = VnPayProps().apply {
             baseUrl = ""
             secretKey = ""
             tmnCode = ""
@@ -131,7 +129,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
         val badProvider = IVnPayment(badProps, client)
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
-        StepVerifier.create(badProvider.refund(clientData, systemData))
+        create(badProvider.refund(clientData, systemData))
             .expectError(IllegalStateException::class.java)
             .verify()
     }
@@ -143,7 +141,7 @@ internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayCli
             vnpBankCode = "VCB"
         )
         val systemData = VnPaySystemData()
-        StepVerifier.create(provider.sale(clientData, systemData))
+        create(provider.sale(clientData, systemData))
             .expectNextMatches {
                 val purl = (it as Map<*, *>)["purl"] as String
                 purl.contains("vnp_BankCode=VCB")

@@ -1,30 +1,33 @@
 package io.github.wliamp.kit.pay.core
 
+import io.github.wliamp.kit.pay.core.PaymentProps.*
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
+import reactor.core.publisher.Mono.*
 import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
+import java.nio.charset.StandardCharsets.*
+import java.time.LocalDateTime.*
+import kotlin.DeprecationLevel.*
 
 internal class IVnPayment internal constructor(
-    private val props: PaymentProps.VnPayProps,
+    private val props: VnPayProps,
     private val webClient: WebClient
 ) : IPayment<VnPayClientData, VnPaySystemData> {
     private val provider = "vnPay"
 
     @Deprecated(
         message = "Not supported by VNPay",
-        level = DeprecationLevel.HIDDEN
+        level = HIDDEN
     )
     override fun authorize(client: VnPayClientData, system: VnPaySystemData): Mono<Any> =
-        Mono.error(UnsupportedOperationException("VNPay AUTHORIZE unsupported"))
+        error(UnsupportedOperationException("VNPay AUTHORIZE unsupported"))
 
     @Deprecated(
         message = "Not supported by VNPay",
-        level = DeprecationLevel.HIDDEN
+        level = HIDDEN
     )
     override fun capture(client: VnPayClientData, system: VnPaySystemData): Mono<Any> =
-        Mono.error(UnsupportedOperationException("VNPay CAPTURE unsupported"))
+        error(UnsupportedOperationException("VNPay CAPTURE unsupported"))
 
     override fun sale(client: VnPayClientData, system: VnPaySystemData): Mono<Any> =
         props.takeIf {
@@ -33,7 +36,7 @@ internal class IVnPayment internal constructor(
                 it.tmnCode.isNotBlank()
         }?.let { p ->
             val vnpTxnRef = system.vnpTxnRef ?: generateCode(100)
-            val now = LocalDateTime.now()
+            val now = now()
             val pattern = "yyyyMMddHHmmss"
             val body = mutableMapOf<String, Any>(
                 "vnp_Version" to "2.1.0",
@@ -70,13 +73,13 @@ internal class IVnPayment internal constructor(
             body.optional("vnp_Inv_Taxcode", client.vnpInvTaxcode)
             body.optional("vnp_Inv_Type", client.vnpInvType)
             val query = querySale(body)
-            Mono.just(
+            just(
                 mapOf(
                     "purl" to
                         "${p.baseUrl}${p.saleUri}?$query&vnp_SecureHash=${hmacSHA512(p.secretKey, query)}"
                 )
             )
-        } ?: Mono.error(
+        } ?: error(
             IllegalStateException(
                 "Missing parameter " +
                     "'provider.payment.vn-pay.return-url' " +
@@ -103,7 +106,7 @@ internal class IVnPayment internal constructor(
             val transactionDate =
                 formatDate(system.vnpTransactionDate, pattern)
             val createBy = system.vnpCreateBy ?: ""
-            val createDate = formatDate(LocalDateTime.now(), pattern)
+            val createDate = formatDate(now(), pattern)
             val ipAddr = system.vnpIpAddr ?: "127.0.0.1"
             val orderInfo = system.vnpOrderInfo ?: "Refund order $txnRef"
             val body = mutableMapOf<String, Any>(
@@ -133,12 +136,12 @@ internal class IVnPayment internal constructor(
                 .uri("${p.baseUrl}${p.refundUri}")
                 .bodyValue(body)
                 .retrieve()
-                .onStatus({ status -> status.isError }) { response ->
-                    Mono.error(IllegalStateException("VNPay payment failed: ${response.statusCode()}"))
+                .onStatus({ it.isError }) {
+                    error(IllegalStateException("VNPay payment failed: ${it.statusCode()}"))
                 }
                 .bodyToMono(Map::class.java)
-                .map { resp -> mapOf("resp" to resp) }
-        } ?: Mono.error(
+                .map { mapOf("resp" to it) }
+        } ?: error(
             IllegalStateException(
                 "Missing parameter " +
                     "'provider.payment.vn-pay.secret-key' " +
@@ -149,16 +152,16 @@ internal class IVnPayment internal constructor(
 
     @Deprecated(
         message = "Not supported by VNPay",
-        level = DeprecationLevel.HIDDEN
+        level = HIDDEN
     )
     override fun void(client: VnPayClientData, system: VnPaySystemData): Mono<Any> =
-        Mono.error(UnsupportedOperationException("VNPay VOID unsupported"))
+        error(UnsupportedOperationException("VNPay VOID unsupported"))
 
     private fun querySale(body: Map<String, Any>): String =
         body.entries
             .sortedBy { it.key }
             .joinToString("&")
-            { "${it.key}=${URLEncoder.encode(it.value.toString(), StandardCharsets.UTF_8.toString())}" }
+            { "${it.key}=${URLEncoder.encode(it.value.toString(), UTF_8.toString())}" }
 
     private fun hmacSHA512(key: String, data: String): String =
         hmac("SHA512", key, data)

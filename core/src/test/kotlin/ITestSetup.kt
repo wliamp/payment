@@ -1,15 +1,15 @@
-package io.github.wliamp.pro.vrf
+package io.github.wliamp.kit.pay.core
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.netty.channel.ChannelOption
+import io.netty.channel.ChannelOption.*
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.netty.http.client.HttpClient
-import java.util.concurrent.TimeUnit
+import reactor.netty.http.client.HttpClient.*
+import java.util.concurrent.TimeUnit.*
 
 internal interface ITestSetup<P : Any, T> {
     val server: MockWebServer
@@ -22,11 +22,11 @@ internal interface ITestSetup<P : Any, T> {
     fun buildProvider(props: P, client: WebClient): T
 
     fun initServerAndClient() =
-        HttpClient.create()
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 200)
+        create()
+            .option(CONNECT_TIMEOUT_MILLIS, 200)
             .doOnConnected {
-                it.addHandlerLast(ReadTimeoutHandler(1, TimeUnit.SECONDS))
-                it.addHandlerLast(WriteTimeoutHandler(1, TimeUnit.SECONDS))
+                it.addHandlerLast(ReadTimeoutHandler(1, SECONDS))
+                it.addHandlerLast(WriteTimeoutHandler(1, SECONDS))
             }
             .let {
                 WebClient.builder()

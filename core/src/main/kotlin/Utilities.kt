@@ -41,8 +41,7 @@ internal fun MutableMap<String, Any>.optional(key: String, value: Any?) {
 }
 
 internal fun generateCode(size: Int): String =
-    randomUUID().toString().replace("-", "")
-        .take(size)
+    randomUUID().toString().replace("-", "") .take(size)
 
 internal fun formatDate(input: Any?, pattern: String): String =
     when (input) {
@@ -88,12 +87,10 @@ internal fun WebClient.fetchPayload(
                 is SocketTimeoutException,
                 is WebClientRequestException -> PaymentNetworkException(provider, it)
                 is JsonProcessingException -> PaymentParseException(provider, "Invalid JSON", it)
-                is DecodingException -> {
-                    val cause = it.cause
-                    if (cause is JsonProcessingException)
-                        PaymentParseException(provider, "Invalid JSON", cause)
-                    else PaymentParseException(provider, "Invalid JSON", it)
-                }
+                is DecodingException ->
+                    (it.cause as? JsonProcessingException)
+                        ?.let { cause -> PaymentParseException(provider, "Invalid JSON", cause) }
+                        ?: PaymentParseException(provider, "Invalid JSON", it)
                 else -> PaymentUnexpectedException(provider, it)
             }
         }
