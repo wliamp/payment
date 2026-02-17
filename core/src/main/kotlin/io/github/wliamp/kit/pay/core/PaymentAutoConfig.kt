@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -20,7 +20,8 @@ internal class PaymentAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun an(): IPayment<AuthorizeNetClientData, AuthorizeNetSystemData> = IAuthorizeNet(props.authorizeNet, WebClient.builder().build())
+    fun an(): IPayment<AuthorizeNetClientData, AuthorizeNetSystemData> =
+        IAuthorizeNet(props.authorizeNet, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -29,7 +30,8 @@ internal class PaymentAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun vp(): IPayment<VnPayClientData, VnPaySystemData> = IVnPayment(props.vnPay, WebClient.builder().build())
+    fun vp(): IPayment<VnPayClientData, VnPaySystemData> =
+        IVnPayment(props.vnPay, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -38,7 +40,8 @@ internal class PaymentAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zp(): IPayment<ZaloPayClientData, ZaloPaySystemData> = IZaloPayment(props.zaloPay, WebClient.builder().build())
+    fun zp(): IPayment<ZaloPayClientData, ZaloPaySystemData> =
+        IZaloPayment(props.zaloPay, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean

@@ -1,4 +1,5 @@
 # JVM / Gradle / Kotlin
+.kotlin
 .gradle/
 **/.gradle/
 build/

@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -48,14 +48,14 @@ internal class IAuthorizeNet internal constructor(
             callJsonApi(body).map(::mapTxnResponse)
         }
 
-    override fun void(cus: AuthorizeNetClientData, sys: AuthorizeNetSystemData): Mono<Any> =
+    override fun void(client: AuthorizeNetClientData, system: AuthorizeNetSystemData): Mono<Any> =
         requireAuthKeys().flatMap {
             val body = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to mapOf(
                         "transactionType" to "voidTransaction",
-                        "refTransId" to sys.refTransId
+                        "refTransId" to system.refTransId
                     )
                 )
             )
@@ -134,18 +134,18 @@ internal class IAuthorizeNet internal constructor(
     private fun requireAuthKeys(): Mono<Unit> =
         props.takeIf {
             it.apiLoginId.isNotBlank() &&
-                it.transactionKey.isNotBlank() &&
-                it.returnUrl.isNotBlank() &&
-                it.cancelUrl.isNotBlank()
+                    it.transactionKey.isNotBlank() &&
+                    it.returnUrl.isNotBlank() &&
+                    it.cancelUrl.isNotBlank()
         }?.let { Mono.just(Unit) }
             ?: Mono.error(
                 IllegalStateException(
                     "Missing parameter " +
-                        "'provider.payment.authorize-net.api-login-id' " +
-                        "or 'provider.payment.authorize-net.cancel-url' " +
-                        "or 'provider.payment.authorize-net.return-url' " +
-                        "or 'provider.payment.authorize-net.transaction-key' " +
-                        "for AuthorizeNet configurations"
+                            "'provider.payment.authorize-net.api-login-id' " +
+                            "or 'provider.payment.authorize-net.cancel-url' " +
+                            "or 'provider.payment.authorize-net.return-url' " +
+                            "or 'provider.payment.authorize-net.transaction-key' " +
+                            "for AuthorizeNet configurations"
                 )
             )
 

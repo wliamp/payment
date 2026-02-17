@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -47,7 +47,10 @@ internal class IVnPayment internal constructor(
                 "vnp_OrderInfo" to (system.vnpOrderInfo ?: "Create Order for TxnRef=${vnpTxnRef}"),
                 "vnp_OrderType" to (system.vnpOrderType ?: "other"),
                 "vnp_ReturnUrl" to p.returnUrl,
-                "vnp_ExpireDate" to formatDate(now.plusMinutes(p.expiredMinutes), pattern),
+                "vnp_ExpireDate" to formatDate(
+                    now.plusMinutes(p.expiredMinutes),
+                    pattern
+                ),
                 "vnp_TxnRef" to vnpTxnRef,
             )
             body.optional("vnp_BankCode", client.vnpBankCode)
@@ -97,7 +100,8 @@ internal class IVnPayment internal constructor(
             val txnRef = system.vnpTxnRef ?: generateCode(100)
             val amount = (client.vnpAmount?.toInt()?.times(100)).toString()
             val transactionNo = system.vnpTransactionNo ?: ""
-            val transactionDate = formatDate(system.vnpTransactionDate, pattern)
+            val transactionDate =
+                formatDate(system.vnpTransactionDate, pattern)
             val createBy = system.vnpCreateBy ?: ""
             val createDate = formatDate(LocalDateTime.now(), pattern)
             val ipAddr = system.vnpIpAddr ?: "127.0.0.1"
@@ -156,5 +160,6 @@ internal class IVnPayment internal constructor(
             .joinToString("&")
             { "${it.key}=${URLEncoder.encode(it.value.toString(), StandardCharsets.UTF_8.toString())}" }
 
-    private fun hmacSHA512(key: String, data: String): String = hmac("SHA512", key, data)
+    private fun hmacSHA512(key: String, data: String): String =
+        hmac("SHA512", key, data)
 }

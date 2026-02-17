@@ -1,6 +1,6 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
-import io.github.wliamp.pro.pay.Payment.*
+import io.github.wliamp.kit.pay.core.Payment.*
 
 class PaymentProvider(
     val authorizeNet: IPayment<AuthorizeNetClientData, AuthorizeNetSystemData>?,

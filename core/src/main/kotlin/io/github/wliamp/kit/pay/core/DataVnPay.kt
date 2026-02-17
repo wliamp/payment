@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
 data class VnPayClientData(
     val vnpAmount: String? = null,

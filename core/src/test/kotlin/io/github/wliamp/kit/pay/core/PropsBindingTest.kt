@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

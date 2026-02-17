@@ -1,11 +1,15 @@
-import org.gradle.api.tasks.testing.Test
-
-plugins {
-    id("org.jetbrains.kotlin.jvm")
-    id("maven-publish")
-    id("signing")
-}
-
-tasks.named<Test>("test") {
-    useJUnitPlatform()
+dependencies {
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:4.0.2"))
+    implementation("org.springframework.boot:spring-boot-autoconfigure")
+    api("org.springframework:spring-webflux")
+    api("io.projectreactor:reactor-core")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("org.springframework.boot:spring-boot-autoconfigure")
+    compileOnly("org.springframework.boot:spring-boot-configuration-processor")
+    testImplementation("org.springframework.boot:spring-boot-test")
+    testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
+    testImplementation("org.assertj:assertj-core")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("io.projectreactor.netty:reactor-netty")
 }

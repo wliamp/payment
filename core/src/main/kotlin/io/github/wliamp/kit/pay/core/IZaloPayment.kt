@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -89,7 +89,11 @@ internal class IZaloPayment internal constructor(
             val mRefundId =
                 "${formatDate(LocalDateTime.now(), "yyMMdd")}_" +
                     "${appId}_" +
-                    generateCode((37 - "$appId".length).coerceAtLeast(0))
+                        generateCode(
+                            (37 - "$appId".length).coerceAtLeast(
+                                0
+                            )
+                        )
             val zpTransId = system.zpTransId ?: ""
             val amount = client.amount ?: 0
             val refundFeeAmount: Long = system.refundFeeAmount?.toNumber() ?: 0
@@ -137,5 +141,6 @@ internal class IZaloPayment internal constructor(
     override fun void(client: ZaloPayClientData, system: ZaloPaySystemData): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay VOID unsupported"))
 
-    private fun hmacSHA256(key: String, data: String): String = hmac("SHA256", key, data)
+    private fun hmacSHA256(key: String, data: String): String =
+        hmac("SHA256", key, data)
 }

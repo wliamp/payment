@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.kit.pay.core
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.wliamp.pro.vrf.ITestSetup
